@@ -28,6 +28,9 @@ Both options take Jira issues, categorize them, and generate release notes autom
 
 ### 1️⃣ **Configuration (config.json)**
 Before running the script, update `config.json` with your Jira credentials and project details:
+1. Copy `config.template.json` to `config.json`
+   ```bash
+   cp config.template.json config.json
 ```json
 {
   "JIRA_URL": "https://your-jira-instance.atlassian.net",

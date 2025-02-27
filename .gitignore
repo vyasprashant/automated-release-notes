@@ -1,0 +1,38 @@
+# Ignore Python compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environments
+venv/
+.env
+
+# Ignore configuration files with sensitive data
+config.json
+
+# Ignore output files and logs
+output/
+*.log
+
+# Ignore Docker files
+*.docker
+*.env
+
+# Ignore dependencies
+*.egg-info/
+*.bak
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE/project-specific files
+.vscode/
+.idea/
+*.iml
+
+
