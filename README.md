@@ -1,29 +1,25 @@
-# Release Notes Accelerator
+# Release Notes Accelerator (No UI)
 
-This project is a Dockerized tool for generating release notes from Jira issues, offering both a web-based UI (via Streamlit) and a command-line interface (CLI). It supports multiple summarization methods (Hugging Face, OpenAI, Ollama) and output options (Markdown file, Confluence, or both).
+This is the baseline version of the Release Notes Accelerator, a Python tool for generating release notes from Jira issues. It processes Jira data, summarizes issues using configurable methods (Hugging Face, OpenAI, Ollama), and outputs release notes to a Markdown file. This version does not include a user interface (UI) or advanced command-line options, relying instead on a `config.yaml` file for settings.
 
 ## Features
-- **Dual Interface**: Choose between a user-friendly Streamlit UI or a flexible CLI.
-- **Summarizers**: Supports Hugging Face, OpenAI, and Ollama for summarizing Jira issues.
-- **Output Options**: Generate release notes as a Markdown file, publish to Confluence, or both.
-- **Dockerized**: Runs seamlessly in Docker containers, including Ollama support.
+- **Core Logic**: Fetches Jira issues, categorizes them, and generates summaries.
+- **Summarizers**: Supports Hugging Face, OpenAI, and Ollama for issue summarization.
+- **Output**: Saves release notes as a Markdown file.
+- **Config-Driven**: Uses a YAML configuration file for all settings.
 
 ## Prerequisites
-- **Docker**: Installed and running on your system.
+- **Python 3.9**: Installed on your system.
 - **Jira Access**: Valid Jira credentials (username and API token).
-- **Confluence Access** (optional): Valid Confluence credentials for publishing.
+- **Dependencies**: Install required Python packages (see `requirements.txt`).
 
 ## Project Structure
 ```
 arnr2/
-├── Dockerfile
 ├── README.md
-├── cli.py             # Core logic and CLI interface
-├── entry.py           # Entry point to choose UI or CLI
-├── ui.py              # Streamlit UI
+├── cli.py             # Main script with core logic
+├── config.yaml        # Configuration file (create manually)
 ├── requirements.txt   # Python dependencies
-├── .streamlit/
-│   └── config.toml    # Streamlit configuration
 ├── fetchers/
 │   └── jira_fetcher.py
 ├── summarizers/
@@ -35,9 +31,8 @@ arnr2/
 │   ├── json_formatter.py
 │   └── html_formatter.py
 ├── exporters/
-│   ├── file_exporter.py
-│   └── confluence_exporter.py
-└── output/            # Generated files (created/mounted)
+│   └── file_exporter.py
+└── output/            # Generated files (created at runtime)
 ```
 
 ## Setup
@@ -47,97 +42,78 @@ arnr2/
 git clone <repository-url>
 cd arnr2 
 ```
-### 2. Build the Docker Image
+### 2. Install Dependencies
 ```
-docker build -t release-notes-app .
+pip install -r requirements.txt
 ```
-### 3. Run Ollama (Optional)
-If using the Ollama summarizer:
+### 3. Configure
+Create a config.yaml file in the project root with your settings. Example:
 ```
-docker network create release-net
-docker run -d --name ollama --network release-net -p 11434:11434 ollama/ollama
+jira:
+  url: "https://<project>.atlassian.net"
+  username: "your-email@example.com"
+  password: "your-jira-api-token"
+version: "version"
+summarizer:
+  type: "ollama"  # Options: "huggingface", "openai", "ollama"
+  openai_api_key: "your-openai-key"  # Required if type is "openai"
+output:
+  file_path: "output/release_notes.md"
 ```
+- Replace placeholders with your actual Jira credentials and preferences.
+- For Ollama, ensure it’s running locally or on a network-accessible server (update ollama_summarizer.py if needed).
 
 ## Usage
-### UI Mode (Streamlit)
-Run the web interface:
+### Run the Script
 ```
-docker run -p 8501:8501 --network release-net -v $(pwd)/output:/app/output release-notes-app
+python cli.py
 ```
-- Access the UI at http://localhost:8501.
-- Fill in:
-  - Jira Configuration: URL, username, API token, version, and optional JQL.
-  - Summarizer: Choose "huggingface", "openai", or "ollama" (provide OpenAI API key if needed).
-  - Output: Select "file", "confluence", or both, and specify details (e.g., file path, Confluence credentials).
-- Click "Generate Release Notes" to create the output.
+- The script reads config.yaml, fetches Jira issues, generates summaries, and saves the release notes to the specified file (e.g., output/release_notes.md).
 
-### CLI Mode
-Run the command-line interface:
-```
-docker run -it --network release-net -v $(pwd)/output:/app/output release-notes-app --cli
-```
-- Provide arguments or enter them interactively when prompted:
-  - --jira-url: Jira instance URL (default: https://uat-givaudan.atlassian.net).
-  - --jira-username: Jira username (required).
-  - --jira-token: Jira API token (required).
-  - --version: Release version (default: Test-release-0.1.0).
-  - --jql: Custom JQL query (optional).
-  - --summarizer: huggingface, openai, or ollama (default: huggingface).
-  - --openai-api-key: Required for OpenAI summarizer.
-  - --output: Space-separated list of file, confluence (default: file).
-  - --file-path: Path for file output (default: output/release_notes.md).
-  - --file-format: markdown, json, or html (default: markdown).
-  - --confluence-url: Confluence URL (default: https://uat-givaudan.atlassian.net/wiki).
-  - --confluence-username: Confluence username (required for Confluence).
-  - --confluence-token: Confluence API token (required for Confluence).
-  - --space-key: Confluence space key (default: FP).
-  - --page-title: Confluence page title (default: Release Notes - {version}).
-  - --parent-page-id: Confluence parent page ID (optional).
-  
-#### Example CLI Command
-```
-  docker run -it --network release-net -v $(pwd)/output:/app/output release-notes-app --cli --jira-username "user" --jira-token "token" --summarizer ollama --output file confluence --file-path "output/notes.md" --confluence-username "cuser" --confluence-token "ctoken"
-```  
+### Output
+**File:** Saved to the path specified in config.yaml (e.g., output/release_notes.md) in Markdown format.
 
-## Output
-- File: Saved to the specified path (e.g., output/notes.md) in the mounted output/ directory.
-- Confluence: Published to the specified space (e.g., FP) under the given page title.
-  
+## Configuration Details
+- **JIRA**:
+    - url: Your Jira instance URL.
+    - username: Your Jira username (typically an email).
+    - password: Your Jira API token.
+- Version: The release version to filter Jira issues (e.g., Test-release-0.1.0).
+- Summarizer:
+    - type: One of huggingface, openai, or ollama.
+    - openai_api_key: Required for OpenAI summarizer.
+- Output:
+    - file_path: Path where the Markdown file will be saved.
+
 ## Troubleshooting
-####  Streamlit Errors: If UI fails to load, check container logs:
+**Jira Errors**: Verify credentials and network access. Check logs for details:
 ```
-  docker ps -a
-  docker logs <container_id>
+python cli.py
 ```
 
-####  Ollama Connection: Ensure Ollama is running and accessible:
+####  Ollama Connection: If using Ollama, ensure it’s running:
 ```
-  docker ps  # Verify ollama container
+docker run -d -p 11434:11434 ollama/ollama
 ```
-Update summarizers/ollama_summarizer.py to use http://ollama:11434/api/generate if needed.
-- Jira/Confluence Errors: Verify credentials and network access.
-  
+Update summarizers/ollama_summarizer.py to use http://localhost:11434/api/generate if local.
+- **Missing Dependencies**: Ensure all packages are installed:
+
+```
+pip install -r requirements.txt
+```
+
 ## Development Notes
-*   Built with Python 3.9.
-*   Dependencies managed via requirements.txt.
-*   Streamlit UI runs on port 8501.
-*   Ollama summarizer requires a separate container on the release-net network.
+* Built with Python 3.9.
+* Dependencies listed in requirements.txt.
+* No UI or CLI options; relies on config.yaml for customization.
 
 ## Contributing
-Feel free to submit issues or pull requests to enhance functionality or fix bugs!
+This is the baseline version. For UI or CLI enhancements, see other branches:
+
+* ui: Streamlit UI version.
+* cli-options: CLI with command-line arguments.
+* all-in-one: Combined UI and CLI features.
+  Submit issues or pull requests to enhance this version or suggest improvements!
+
 
 ---
-
-### Instructions
-1. **Create the File**:
-   - Copy the content above into a text editor.
-   - Save it as `README.md` in your project root directory (`arnr2/`).
-
-2. **Customize**:
-   - Replace `<repository-url>` with your actual Git repository URL if you’re using one.
-   - Adjust default values (e.g., Jira URL, username) to match your specific setup if preferred.
-
-3. **Include in Docker**:
-   - The `COPY . .` line in your `Dockerfile` will automatically include `README.md` in the image, though it’s not required for runtime—it’s just documentation.
-
-This Markdown file provides a comprehensive guide for your project, ensuring users can easily set up and use both the UI and CLI modes. Let me know if you’d like any additions or modifications!
