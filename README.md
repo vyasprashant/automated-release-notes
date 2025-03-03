@@ -117,3 +117,23 @@ This is the baseline version. For UI or CLI enhancements, see other branches:
 
 
 ---
+## Summarized Execution Steps
+
+#### Build
+```
+docker build -t release-notes-generator .
+```
+#### Run
+```
+docker run --rm \
+   -v $(pwd)/config.yaml:/app/config.yaml \
+   -v $(pwd)/output:/app/output \
+   --network release-net \
+   release-notes-generator python main.py --config /app/config.yaml --summarizer ollama
+```
+#### Run Ollama (if not already running)
+```
+docker network create release-net
+
+docker run -d --name ollama --network release-net -p 11434:11434 ollama/ollama
+```

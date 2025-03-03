@@ -11,6 +11,7 @@ from exporters.file_exporter import export_to_file
 from exporters.confluence_exporter import export_to_confluence
 
 def categorize_issues(issues):
+    """Categorize Jira issues by type."""
     categories = {}
     for issue in issues:
         issue_type = issue['fields']['issuetype']['name']
@@ -20,6 +21,7 @@ def categorize_issues(issues):
     return categories
 
 def extract_adf_text(adf_content):
+    """Extract text from Jira ADF content."""
     if not isinstance(adf_content, dict) or "content" not in adf_content:
         return ""
     def parse_node(node):
@@ -34,109 +36,108 @@ def extract_adf_text(adf_content):
         return ""
     return parse_node(adf_content).strip()
 
-def prompt_for_output_types():
-    """Prompt user to select multiple output types."""
-    output_options = {'1': 'confluence', '2': 'file'}
-    click.echo("Select output types (enter numbers separated by spaces, e.g., '1 2'):")
-    click.echo("1. Confluence")
-    click.echo("2. File")
-    while True:
-        selection = click.prompt("Your choices", default="1").strip().split()
-        selected = [output_options.get(s) for s in selection if s in output_options]
-        if selected:
-            return selected
-        click.echo("Invalid selection. Please choose valid numbers (e.g., '1', '1 2').")
-
-def prompt_for_confluence_config(cfg):
-    """Prompt for Confluence details if not in config."""
-    confluence_cfg = cfg.get('output', {}).get('confluence', {})
-    return {
-        'url': click.prompt("Confluence URL", default=confluence_cfg.get('url', "https://uat-givaudan.atlassian.net/wiki")),
-        'username': click.prompt("Confluence Username", default=confluence_cfg.get('username', "")),
-        'api_token': click.prompt("Confluence API Token", default=confluence_cfg.get('api_token', ""), hide_input=True),
-        'space_key': click.prompt("Space Key", default=confluence_cfg.get('space_key', "FP")),
-        'page_title': click.prompt("Page Title", default=confluence_cfg.get('page_title', "Release Notes - {version}")),
-        'parent_page_id': click.prompt("Parent Page ID (optional)", default=confluence_cfg.get('parent_page_id', ""), show_default=False) or None
-    }
-
 @click.command()
-@click.option('--config', default=None, help='Path to config file (optional)')
-@click.option('--jql', default=None, help='Custom JQL query to override default')
-def generate_release_notes(config, jql):
-    """Interactively generate release notes from Jira issues."""
-    # Load config if provided, otherwise start with empty dict
+@click.option('--config', default='config.yaml', help='Path to config file')
+@click.option('--jira-url', help='Jira instance URL')
+@click.option('--jira-username', help='Jira username')
+@click.option('--jira-token', help='Jira API token', hide_input=True)
+@click.option('--version', help='Release version')
+@click.option('--jql', help='Custom JQL query to override default')
+@click.option('--summarizer', type=click.Choice(['huggingface', 'openai', 'ollama']), default='huggingface', help='Summarization engine')
+@click.option('--openai-api-key', help='OpenAI API key (required for openai summarizer)', hide_input=True)
+@click.option('--output-type', type=click.Choice(['file', 'confluence', 'both']), multiple=True, help='Output destination: file, confluence, or both')
+@click.option('--file-path', help='Path for file output')
+@click.option('--file-format', type=click.Choice(['markdown', 'json', 'html']), default='markdown', help='File output format')
+@click.option('--confluence-url', help='Confluence instance URL')
+@click.option('--confluence-username', help='Confluence username')
+@click.option('--confluence-token', help='Confluence API token', hide_input=True)
+@click.option('--space-key', help='Confluence space key')
+@click.option('--page-title', help='Confluence page title')
+@click.option('--parent-page-id', help='Confluence parent page ID (optional)')
+def generate_release_notes(config, jira_url, jira_username, jira_token, version, jql, summarizer, openai_api_key,
+                           output_type, file_path, file_format, confluence_url, confluence_username, confluence_token,
+                           space_key, page_title, parent_page_id):
+    """Generate release notes from Jira issues with customizable options."""
+    # Load config file if it exists
     cfg = {}
-    if config:
-        try:
-            with open(config, 'r') as f:
-                cfg = yaml.safe_load(f) or {}
-        except FileNotFoundError:
-            click.echo(f"Config file '{config}' not found. Proceeding with interactive prompts.")
-        except yaml.YAMLError as e:
-            raise click.ClickException(f"Invalid YAML in config file: {str(e)}")
+    try:
+        with open(config, 'r') as f:
+            cfg = yaml.safe_load(f) or {}
+    except FileNotFoundError:
+        click.echo(f"Config file '{config}' not found. Using CLI options.")
+    except yaml.YAMLError as e:
+        raise click.ClickException(f"Invalid YAML in config file: {str(e)}")
 
-    # Jira configuration
-    jira_cfg = cfg.get('jira', {})
-    jira_url = click.prompt("Jira URL", default=jira_cfg.get('url', "https://uat-givaudan.atlassian.net"))
-    jira_username = click.prompt("Jira Username", default=jira_cfg.get('username', ""))
-    jira_password = click.prompt("Jira API Token", default=jira_cfg.get('password', ""), hide_input=True)
-    auth = (jira_username, jira_password)
-    version = click.prompt("Release Version", default=cfg.get('version', "Test-release-0.1.0"))
+    # Build config dictionary, prioritizing CLI options over config file
+    cfg['jira'] = {
+        'url': jira_url or cfg.get('jira', {}).get('url', 'https://uat-givaudan.atlassian.net'),
+        'username': jira_username or cfg.get('jira', {}).get('username'),
+        'password': jira_token or cfg.get('jira', {}).get('password')
+    }
+    cfg['version'] = version or cfg.get('version', 'Test-release-0.1.0')
+    cfg['summarizer'] = {
+        'type': summarizer or cfg.get('summarizer', {}).get('type', 'huggingface')
+    }
+    if summarizer == 'openai':
+        cfg['summarizer']['openai_api_key'] = openai_api_key or cfg.get('summarizer', {}).get('openai_api_key')
+    if jql:
+        cfg['jira']['jql'] = jql
 
-    # Summarizer selection
-    summarizer_options = {'1': 'huggingface', '2': 'openai', '3': 'ollama'}
-    click.echo("Select a summarizer:")
-    click.echo("1. Hugging Face")
-    click.echo("2. OpenAI")
-    click.echo("3. Ollama")
-    while True:
-        summarizer_choice = click.prompt("Your choice (1-3)", default="1")
-        summarizer_type = summarizer_options.get(summarizer_choice)
-        if summarizer_type:
-            break
-        click.echo("Invalid choice. Please enter 1, 2, or 3.")
-
-    # Additional summarizer config if needed
-    summarizer_cfg = cfg.get('summarizer', {})
-    if summarizer_type == "openai":
-        openai_api_key = click.prompt("OpenAI API Key", default=summarizer_cfg.get('openai_api_key', ""), hide_input=True)
-        if not openai_api_key:
-            raise click.ClickException("OpenAI API key is required for OpenAI summarizer")
+    # Validate Jira config
+    if not all(k in cfg['jira'] for k in ['url', 'username', 'password']):
+        raise click.ClickException("Missing required Jira fields: url, username, password")
+    if summarizer == 'openai' and 'openai_api_key' not in cfg['summarizer']:
+        raise click.ClickException("Missing OpenAI API key for 'openai' summarizer")
 
     # Output configuration
-    output_types = prompt_for_output_types()
-    output_cfg = cfg.get('output', {})
-    file_path = None
-    confluence_cfg = None
-    if 'file' in output_types:
-        file_format = click.prompt("File output format", type=click.Choice(['markdown', 'json', 'html']), default='markdown')
-        file_path = click.prompt("File path", default=output_cfg.get('file_path', f"output/release_notes_{version}.{file_format}"))
+    output_types = list(output_type) if output_type else cfg.get('output', {}).get('type', ['file'])
+    if not isinstance(output_types, list):
+        output_types = [output_types]
+    cfg['output'] = {
+        'type': output_types,
+        'file_path': file_path or cfg.get('output', {}).get('file_path', f"output/release_notes_{cfg['version']}.{file_format}"),
+        'format': file_format or cfg.get('output', {}).get('format', 'markdown')
+    }
     if 'confluence' in output_types:
-        confluence_cfg = prompt_for_confluence_config(cfg)
+        cfg['output']['confluence'] = {
+            'url': confluence_url or cfg.get('output', {}).get('confluence', {}).get('url', 'https://uat-givaudan.atlassian.net/wiki'),
+            'username': confluence_username or cfg.get('output', {}).get('confluence', {}).get('username'),
+            'api_token': confluence_token or cfg.get('output', {}).get('confluence', {}).get('api_token'),
+            'space_key': space_key or cfg.get('output', {}).get('confluence', {}).get('space_key', 'FP'),
+            'page_title': page_title or cfg.get('output', {}).get('confluence', {}).get('page_title', f"Release Notes - {cfg['version']}"),
+            'parent_page_id': parent_page_id or cfg.get('output', {}).get('confluence', {}).get('parent_page_id')
+        }
+        if not all(k in cfg['output']['confluence'] for k in ['url', 'username', 'api_token', 'space_key', 'page_title']):
+            raise click.ClickException("Missing required Confluence fields: url, username, api_token, space_key, page_title")
 
-    # JQL setup
+    # Fetch Jira issues
+    jira_url = cfg['jira']['url']
+    auth = (cfg['jira']['username'], cfg['jira']['password'])
+    version = cfg['version']
+    summarizer_type = cfg['summarizer']['type']
+
     default_project = "CICD"
     issue_types = "issuetype IN (\"Story\", \"New Functionality\", \"Improvement\", \"Task\", \"Bug\")"
     jql_with_version = f"project = {default_project} AND fixVersion = \"{version}\" AND {issue_types}"
     jql_without_version = f"project = {default_project} AND {issue_types}"
-    jql_to_use = jql if jql else cfg.get('jira', {}).get('jql', jql_with_version).format(version=version)
+    jql_to_use = cfg['jira'].get('jql', jql_with_version)
 
-    # Fetch Jira issues
     try:
-        print(f"Fetching issues with JQL: {jql_to_use}")
+        click.echo(f"Fetching issues with JQL: {jql_to_use}")
         issues = fetch_jira_issues(jira_url, jql_to_use, auth)
     except Exception as e:
-        print(f"⚠️ Failed initial fetch: {str(e)}")
+        click.echo(f"⚠️ Failed initial fetch: {str(e)}")
+        issues = None
 
     if not issues:
-        print(f"Falling back to broader query: {jql_without_version}")
+        click.echo(f"Falling back to broader query: {jql_without_version}")
         try:
             issues = fetch_jira_issues(jira_url, jql_without_version, auth)
         except Exception as e:
             raise click.ClickException(f"Failed to fetch fallback Jira issues: {str(e)}")
 
     if not issues:
-        print("⚠️ No issues found with either query. Exiting...")
+        click.echo("⚠️ No issues found with either query. Exiting...")
         return
 
     # Categorize issues
@@ -148,9 +149,11 @@ def generate_release_notes(config, jql):
         if summarizer_type == "huggingface":
             summarizer = HuggingFaceSummarizer()
         elif summarizer_type == "openai":
-            summarizer = OpenAISummarizer(openai_api_key)
+            summarizer = OpenAISummarizer(cfg['summarizer']['openai_api_key'])
         elif summarizer_type == "ollama":
             summarizer = OllamaSummarizer()
+        else:
+            raise click.ClickException(f"Unsupported summarizer: {summarizer_type}")
     except Exception as e:
         raise click.ClickException(f"Failed to initialize summarizer: {str(e)}")
 
@@ -172,30 +175,33 @@ def generate_release_notes(config, jql):
                 elif summarizer_type == "huggingface":
                     summaries[category] = summarizer.summarize(full_text)
             except Exception as e:
-                print(f"⚠️ Failed to summarize '{category}': {str(e)}")
+                click.echo(f"⚠️ Failed to summarize '{category}': {str(e)}")
                 summaries[category] = "Summary unavailable"
 
-    # Formatters
+    # Generate release notes based on format
     formatters = {
         "markdown": format_markdown,
         "json": format_json,
         "html": format_html
     }
+    if cfg['output']['format'] not in formatters:
+        raise click.ClickException(f"Unsupported format: {cfg['output']['format']}")
+    release_notes = formatters[cfg['output']['format']](version, categories, summaries, categories)
+    markdown_notes = format_markdown(version, categories, summaries, categories)
 
-    # Export based on selected output types
-    if 'confluence' in output_types:
-        markdown_notes = format_markdown(version, categories, summaries, categories)
+    # Export based on output types
+    if 'file' in cfg['output']['type']:
         try:
-            export_to_confluence(markdown_notes, {'output': {'confluence': confluence_cfg}, 'version': version})
-        except Exception as e:
-            raise click.ClickException(f"Failed to export to Confluence: {str(e)}")
-
-    if 'file' in output_types:
-        release_notes = formatters[file_format](version, categories, summaries, categories)
-        try:
-            export_to_file(release_notes, file_path)
+            export_to_file(release_notes, cfg['output']['file_path'])
+            click.echo(f"✅ File saved to: {cfg['output']['file_path']}")
         except Exception as e:
             raise click.ClickException(f"Failed to export to file: {str(e)}")
+    if 'confluence' in cfg['output']['type']:
+        try:
+            export_to_confluence(markdown_notes, cfg)
+            click.echo("✅ Published to Confluence")
+        except Exception as e:
+            raise click.ClickException(f"Failed to export to Confluence: {str(e)}")
 
 if __name__ == "__main__":
     generate_release_notes()

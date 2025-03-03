@@ -31,4 +31,4 @@ pip-delete-this-directory.txt
 
 # Docker-related files
 output/
-config.json
+config.yaml
