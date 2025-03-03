@@ -5,19 +5,26 @@ Hello there,
 We are glad to inform you that the latest version **Test-release-0.1.0** of **Go CI/CD** is out. Below are the Jira issues included in this release.
 
 ## **Summary**  
+### **Bugs**
+ RHACS error message cannot scan images in ghcr.io and aws . Issue where entry point to tagged images in Quay is not recognised . Issue with the Provisioning not running:  Fix issue with the GitLab runners not working on UOCP . Fix service account issue in Argo Workflows:  fix service account issues in Argone Workflows.  Fix service
+
 ### **Storys**
-S&T Business Data Scientists Gitlab project:  Update Confluence article on how to defer vulnerability with RHACS 4.5:  As a member of the Application Deployment team I wish to be able to check out all the projects for an application into one folder so I can merge in a new release, test the build locally and then quickly check in the updates:  As SmartLab Product Team I need to be able to deploy the application to the PRD environment:  Test the setup of the GitLab "Test" runner (different to the builder runners):  Product Teams need to be able to see the "demo" applications in ArgoCD:  Create an ArgoCD instance on the Sandbox (SOCP) cluster:  Work with namespaces instead of projects:  Set up and run regular RIS hypercare follow-up with Openshift and Grecis operations teams:  Post-mortem INC1725025:  Provision SSU Smart Submission:  KT with Damien:  Upgrade ArgoCD image updater: 
+ S&T Business Data Scientists Gitlab project:  Update Confluence article on how to defer vulnerability with RHACS 4.5.5: As a member of the Application Deployment team I wish to be able to check out all the projects for an application into one folder so I can merge in a new release, test and then quickly check in the updates. As SmartLab Product
 
 ### **Tasks**
-As a member of a Product Team I need incidents to be assigned to my team automatically:  Update or remove HOPEX source code repository:  Document and publish reference for Product Teams for application logs:  Remove namespace devops-uocp (if not used anymore):  Remove non-compliant namespaces UOCP Openshift cluster:  Ensure that in CMDB these fields for an application are filled and with correct data: Resolver Team, Application Support and Application Folder URL:  Ticket to EB-Qual to update Partner Portal firewall for the pgroup PSA_JEE to allow access to mgmt.socp.givaudan.com:  Follow-up & validate the change for the PostgreSQL DB server access control to utilize subnet masks instead of individual server listings:  Connect Test SonarQube to EntraID:  Accompany Product Team to first deployment in DEV: ART:  Update CMDB application fields for Apigee:  Move demo applications to SOCP Sandbox Openshift:  Update the demo app "versioned demon" to create multiple tags on the image in quay :  On-board the "Frames" product team:  Push the "Frames" code to Gitlab:  Support the "Frames" team to deploy in production:  Integrate dashboarding tool for SmartLab metrics:  Update CMDB application fields for Kafka:  Update Checklist for Application Transition to PRD into separate articles replacing how-to:  Fix Critical Vulnerabilities in argocd-image-updater v0.12.0 on OCP:  S&T Grecis Product Team provide procedure in case of out-of-hours RIS outage eg after an upgrade:  UOCP z stream upgrade online in July:  Follow AIOps monitoring evolution:  Decide to silence GivaudanPodNotHealthy on UOCP or take actions to handle incidents:  Post-mortem for Openshift planned changes that cause application outages:  Enable the Risk-related notifications for the containers scanned by RHACS:  Provision access management for RHACS:  Provision access management for Quay:   Update argocd-image-updater to V0.12.0:  Refactor Quay provisioning script: 
-
-### **Bugs**
-RHACS error message cannot scan images in ghcr.io and aws:  Fix issue with the Provisioning not running:  Fix the issue with the GitLab runners not working on UOCP:  Fix service account issue in Argo Workflows:  RHACS : for a CVE be able to defer or mark as false-positive for one namespace without affecting all namespaces it appears in:  Fix the whalesay demo app that is in error:  Issue where the entry point to tagged images in Quay is not recognised : 
+ Product Team members need incidents to be assigned to their team automatically . Update or remove HOPEX source code repository to allow access to mgmt.socp.givaudan.com . Remove non-compliant namespaces UOCP Openshift cluster:  Ensure that in CMDB these fields for an application are filled and with correct data. Resolver Team, Application Support and Application folder URL:  Ticket to EB-Qual to update Partner Portal firewall for the pgroup PSA-JEE to allow the PSA JEE for PSA
 
 ## **Detailed Issues List**
 
 | Priority  | Key   | Summary | Status  |
 |-----------|------|---------|---------|
+| Major | CICD-385 | RHACS error message cannot scan images in ghcr.io and aws | To Do |
+| Major | CICD-372 | Fix issue with the Provisioning not running | Done |
+| Major | CICD-361 | Fix the issue with the GitLab runners not working on UOCP | Done |
+| Major | CICD-357 | Fix service account issue in Argo Workflows | Done |
+| Major | CICD-351 | RHACS : for a CVE be able to defer or mark as false-positive for one namespace without affecting all namespaces it appears in | On-Hold |
+| Major | CICD-346 | Fix the whalesay demo app that is in error | Backlog |
+| Major | CICD-335 | Issue where the entry point to tagged images in Quay is not recognised  | Backlog |
 | Major | CICD-384 | S&T Business Data Scientists Gitlab project | To Do |
 | Major | CICD-383 | Update Confluence article on how to defer vulnerability with RHACS 4.5 | Done |
 | Major | CICD-381 | As a member of the Application Deployment team I wish to be able to check out all the projects for an application into one folder so I can merge in a new release, test the build locally and then quickly check in the updates | Done |
@@ -61,18 +68,7 @@ RHACS error message cannot scan images in ghcr.io and aws:  Fix issue with the P
 | Major | CICD-330 | Provision access management for Quay | Backlog |
 | Major | CICD-325 |  Update argocd-image-updater to V0.12.0 | Done |
 | Major | CICD-323 | Refactor Quay provisioning script | Backlog |
-| Major | CICD-385 | RHACS error message cannot scan images in ghcr.io and aws | To Do |
-| Major | CICD-372 | Fix issue with the Provisioning not running | Done |
-| Major | CICD-361 | Fix the issue with the GitLab runners not working on UOCP | Done |
-| Major | CICD-357 | Fix service account issue in Argo Workflows | Done |
-| Major | CICD-351 | RHACS : for a CVE be able to defer or mark as false-positive for one namespace without affecting all namespaces it appears in | On-Hold |
-| Major | CICD-346 | Fix the whalesay demo app that is in error | Backlog |
-| Major | CICD-335 | Issue where the entry point to tagged images in Quay is not recognised  | Backlog |
-  
 
-A big shoutout to these amazing individuals who helped make this release a success! 🎉  
-
-Looking forward to hearing your feedback.  
-
-Thanks,  
-**Team Go CI/CD**  
+A big shoutout to these amazing individuals who helped make this release a success! 🎉
+Thanks,
+**Go CI/CD**

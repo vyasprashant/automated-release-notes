@@ -1,6 +1,0 @@
-{
-  "JIRA_URL": "https://your-jira-instance.atlassian.net",
-  "JIRA_USERNAME": "your-email@example.com",
-  "JIRA_PASSWORD": "your-api-token",
-  "VERSION": "Release-1.0.0"
-}

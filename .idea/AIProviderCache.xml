@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AIProviderCache">
+    <option name="a" value="1740586052984" />
+    <option name="b">
+      <list>
+        <option value="gpt-3.5-turbo-0125" />
+        <option value="gpt-4-vision-preview" />
+        <option value="gpt-4-0125-preview" />
+        <option value="gpt-4-turbo" />
+        <option value="gpt-4o" />
+        <option value="gpt-4o-mini" />
+        <option value="gpt-4o-2024-08-06" />
+        <option value="gpt-4o-audio-preview" />
+        <option value="gemini-pro" />
+        <option value="gemini-1.5-flash" />
+        <option value="gemini-1.5-pro" />
+        <option value="bodhi-codegemma-7b" />
+        <option value="bodhi-gemma-2b" />
+        <option value="gpt-4o-azure" />
+        <option value="whisper-1" />
+        <option value="tts-1" />
+        <option value="tts-1-hd" />
+        <option value="dall-e-2" />
+        <option value="dall-e-3" />
+      </list>
+    </option>
+  </component>
+</project>

@@ -1,0 +1,22 @@
+# config.yaml.example
+jira:
+  url: ""
+  username: ""
+  password: ""
+  jql: ""
+#  jql: "project = ProjectName AND fixVersion = \"{version}\" AND issuetype IN (\"Story\", \"Bug\")"  # Custom JQL
+version: "" # Provide version
+summarizer:
+  type: ""  # Options: "huggingface", "openai", "ollama"
+  openai_api_key: ""
+output:
+  type: "" # Choose between Confluence and File
+  file_path: "output/<filename>"  # Only needed if type is "file"
+  formats: ["markdown"]  # Generate all specified formats
+  confluence:
+    url: ""
+    username: ""
+    api_token: ""  # Generate at https://id.atlassian.com/manage-profile/security/api-tokens
+    space_key: ""  # Confluence space key
+    parent_page_id: ""  # Optional: Parent page ID for hierarchy
+    page_title: ""  # Dynamic title

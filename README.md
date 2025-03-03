@@ -1,82 +1,143 @@
-# 📌 Automated Release Notes Generator
+# Release Notes Accelerator
 
-## 🚀 Overview
-This project provides an **AI-powered automated release notes generator** that fetches Jira issues and summarizes them into well-structured release notes. You can choose between two AI-powered summarization methods:
+This project is a Dockerized tool for generating release notes from Jira issues, offering both a web-based UI (via Streamlit) and a command-line interface (CLI). It supports multiple summarization methods (Hugging Face, OpenAI, Ollama) and output options (Markdown file, Confluence, or both).
 
-1️⃣ **Transformers-based Summarization** (`release_notes_ai_transformers.py`) – Uses a transformer model (BART) for summarization.
-2️⃣ **Agent-based Summarization** (`release_notes_ai_agent.py`) – Uses an AI agent (Ollama) for dynamic summarization.
+## Features
+- **Dual Interface**: Choose between a user-friendly Streamlit UI or a flexible CLI.
+- **Summarizers**: Supports Hugging Face, OpenAI, and Ollama for summarizing Jira issues.
+- **Output Options**: Generate release notes as a Markdown file, publish to Confluence, or both.
+- **Dockerized**: Runs seamlessly in Docker containers, including Ollama support.
 
-Both options take Jira issues, categorize them, and generate release notes automatically. The solution is containerized using **Docker**, allowing it to run consistently across environments.
+## Prerequisites
+- **Docker**: Installed and running on your system.
+- **Jira Access**: Valid Jira credentials (username and API token).
+- **Confluence Access** (optional): Valid Confluence credentials for publishing.
 
----
-
-## 📂 Project Structure
+## Project Structure
 ```
-├── release_notes_ai_transformers.py  # Script using Transformers (BART) for summarization
-├── release_notes_ai_agent.py         # Script using Ollama AI Agent for summarization
-├── config.json                       # Configuration file with Jira details
-├── requirements.txt                   # Dependencies for Python environment
-├── Dockerfile                         # Docker setup for running the script
-├── docker-compose-transformers.yml    # Docker Compose for Transformers-based summarization
-├── docker-compose-ollama.yml          # Docker Compose for Ollama AI Agent-based summarization
-├── output/                            # Folder where release notes are saved
+arnr2/
+├── Dockerfile
+├── README.md
+├── cli.py             # Core logic and CLI interface
+├── entry.py           # Entry point to choose UI or CLI
+├── ui.py              # Streamlit UI
+├── requirements.txt   # Python dependencies
+├── .streamlit/
+│   └── config.toml    # Streamlit configuration
+├── fetchers/
+│   └── jira_fetcher.py
+├── summarizers/
+│   ├── huggingface_summarizer.py
+│   ├── openai_summarizer.py
+│   └── ollama_summarizer.py
+├── formatters/
+│   ├── markdown_formatter.py
+│   ├── json_formatter.py
+│   └── html_formatter.py
+├── exporters/
+│   ├── file_exporter.py
+│   └── confluence_exporter.py
+└── output/            # Generated files (created/mounted)
 ```
 
----
+## Setup
 
-## 🛠️ Setup and Usage
-
-### 1️⃣ **Configuration (config.json)**
-Before running the script, update `config.json` with your Jira credentials and project details:
-1. Copy `config.template.json` to `config.json`
-   ```bash
-   cp config.template.json config.json
-```json
-{
-  "JIRA_URL": "https://your-jira-instance.atlassian.net",
-  "JIRA_USERNAME": "your-email@example.com",
-  "JIRA_PASSWORD": "your-api-token",
-  "VERSION": "Release-1.0.0"
-}
+### 1. Clone the Repository
+```
+git clone <repository-url>
+cd arnr2 
+```
+### 2. Build the Docker Image
+```
+docker build -t release-notes-app .
+```
+### 3. Run Ollama (Optional)
+If using the Ollama summarizer:
+```
+docker network create release-net
+docker run -d --name ollama --network release-net -p 11434:11434 ollama/ollama
 ```
 
----
-
-## 🐳 Running with Docker
-The solution is **containerized**, so you can run it using Docker:
-
-### **1️⃣ Running with Transformers (BART)**
-#### **🔹 Build and Run the Container**
-```bash
-docker-compose -f docker-compose-transformers.yml up --build
+## Usage
+### UI Mode (Streamlit)
+Run the web interface:
 ```
-✅ This runs `release_notes_ai_transformers.py` inside a container.
-
----
-
-### **2️⃣ Running with AI Agent (Ollama)**
-#### **🔹 Start Ollama (If Running Locally)**
-```bash
-docker-compose -f docker-compose-ollama.yml up --build
+docker run -p 8501:8501 --network release-net -v $(pwd)/output:/app/output release-notes-app
 ```
-✅ This runs `release_notes_ai_agent.py` inside a container along with an Ollama AI container.
+- Access the UI at http://localhost:8501.
+- Fill in:
+  - Jira Configuration: URL, username, API token, version, and optional JQL.
+  - Summarizer: Choose "huggingface", "openai", or "ollama" (provide OpenAI API key if needed).
+  - Output: Select "file", "confluence", or both, and specify details (e.g., file path, Confluence credentials).
+- Click "Generate Release Notes" to create the output.
+
+### CLI Mode
+Run the command-line interface:
+```
+docker run -it --network release-net -v $(pwd)/output:/app/output release-notes-app --cli
+```
+- Provide arguments or enter them interactively when prompted:
+  - --jira-url: Jira instance URL (default: https://uat-givaudan.atlassian.net).
+  - --jira-username: Jira username (required).
+  - --jira-token: Jira API token (required).
+  - --version: Release version (default: Test-release-0.1.0).
+  - --jql: Custom JQL query (optional).
+  - --summarizer: huggingface, openai, or ollama (default: huggingface).
+  - --openai-api-key: Required for OpenAI summarizer.
+  - --output: Space-separated list of file, confluence (default: file).
+  - --file-path: Path for file output (default: output/release_notes.md).
+  - --file-format: markdown, json, or html (default: markdown).
+  - --confluence-url: Confluence URL (default: https://uat-givaudan.atlassian.net/wiki).
+  - --confluence-username: Confluence username (required for Confluence).
+  - --confluence-token: Confluence API token (required for Confluence).
+  - --space-key: Confluence space key (default: FP).
+  - --page-title: Confluence page title (default: Release Notes - {version}).
+  - --parent-page-id: Confluence parent page ID (optional).
+  
+#### Example CLI Command
+```
+  docker run -it --network release-net -v $(pwd)/output:/app/output release-notes-app --cli --jira-username "user" --jira-token "token" --summarizer ollama --output file confluence --file-path "output/notes.md" --confluence-username "cuser" --confluence-token "ctoken"
+```  
+
+## Output
+- File: Saved to the specified path (e.g., output/notes.md) in the mounted output/ directory.
+- Confluence: Published to the specified space (e.g., FP) under the given page title.
+  
+## Troubleshooting
+####  Streamlit Errors: If UI fails to load, check container logs:
+```
+  docker ps -a
+  docker logs <container_id>
+```
+
+####  Ollama Connection: Ensure Ollama is running and accessible:
+```
+  docker ps  # Verify ollama container
+```
+Update summarizers/ollama_summarizer.py to use http://ollama:11434/api/generate if needed.
+- Jira/Confluence Errors: Verify credentials and network access.
+  
+## Development Notes
+*   Built with Python 3.9.
+*   Dependencies managed via requirements.txt.
+*   Streamlit UI runs on port 8501.
+*   Ollama summarizer requires a separate container on the release-net network.
+
+## Contributing
+Feel free to submit issues or pull requests to enhance functionality or fix bugs!
 
 ---
 
-## 📌 Summary
-| Method | AI Used | Best For |
-|--------|--------|----------|
-| **Transformers (BART)** | Facebook BART | Summarization using a pre-trained transformer |
-| **AI Agent (Ollama)** | Llama3 (or other models) | Dynamic, prompt-driven summarization |
+### Instructions
+1. **Create the File**:
+   - Copy the content above into a text editor.
+   - Save it as `README.md` in your project root directory (`arnr2/`).
 
-Both approaches are effective—**Transformers** work best for structured summarization, while **Agents** provide a more dynamic and natural summary. 🚀
+2. **Customize**:
+   - Replace `<repository-url>` with your actual Git repository URL if you’re using one.
+   - Adjust default values (e.g., Jira URL, username) to match your specific setup if preferred.
 
----
+3. **Include in Docker**:
+   - The `COPY . .` line in your `Dockerfile` will automatically include `README.md` in the image, though it’s not required for runtime—it’s just documentation.
 
-## 🔗 Next Steps
-- 🎯 **Test both methods** and choose the one that best fits your needs.
-- 🔧 **Customize the summarization prompts** in `release_notes_ai_agent.py` for better results.
-- 📈 **Integrate this into CI/CD pipelines** to generate release notes automatically.
-
-Happy automating! 🎉
-
+This Markdown file provides a comprehensive guide for your project, ensuring users can easily set up and use both the UI and CLI modes. Let me know if you’d like any additions or modifications!

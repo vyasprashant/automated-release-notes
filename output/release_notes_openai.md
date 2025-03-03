@@ -5,65 +5,26 @@ Hello there,
 We are glad to inform you that the latest version **Test-release-0.1.0** of **Go CI/CD** is out. Below are the Jira issues included in this release.
 
 ## **Summary**  
+### **Bugs**
+Fixed errors related to RHACS scanning images in ghcr.io and AWS, provisioning not running, GitLab runners not working on UOCP, service account issue in Argo Workflows, and entry point recognition issue in Quay tagged images. Added ability to defer or mark a CVE as false-positive for one namespace without affecting others. Resolved errors with the whalesay demo app.
+
 ### **Storys**
-Here is a concise release notes summary for 'Test-release-0.1.0':
-
-**Release Notes: Test-release-0.1.0**
-
-We are pleased to announce the release of `Test-release-0.1.0`, which addresses several key issues and improvements across our project. Notable changes include:
-
-* Enhanced RHACS 4.5 configuration for vulnerability deferment
-* Application Deployment team improvements, including project check-out and merge capabilities
-* SmartLab Product Team deployment enhancements to the PRD environment
-* GitLab "Test" runner setup and testing
-* Namespace management instead of projects in ArgoCD
-* Regular RIS hypercare follow-up with Openshift and Grecis operations teams
-* Fixes for post-mortem INC1725025
-
-This release provides significant improvements to our development, deployment, and monitoring processes.
+The update includes various tasks related to the S&T Business Data Scientists Gitlab project. This involves updating a Confluence article on deferring vulnerabilities with RHACS 4.5, enabling the Application Deployment team to check out all projects for an application into one folder for testing and updates. The SmartLab Product Team aims to deploy applications to the PRD environment and test the setup of the GitLab "Test" runner. Product Teams will now be able to view "demo" applications in ArgoCD, with the creation of an ArgoCD instance on the Sandbox cluster. The focus is on working with namespaces instead of projects, running regular RIS hypercare follow-ups with Openshift and Grecis operations teams, and addressing post-mortem INC1725025. Other tasks include provisioning SSU Smart Submission, knowledge transfer with Damien, and upgrading the ArgoCD image updater.
 
 ### **Tasks**
-**Release Notes: Test-release-0.1.0**
-
-We are pleased to announce the release of Test-release-0.1.0, which includes a range of enhancements and bug fixes that improve our infrastructure and application management processes.
-
-Key highlights include:
-
-* Automated assignment of incidents to Product Teams
-* Enhanced documentation for application logs and CMDB fields
-* Removal of non-compliant namespaces and improvement of access control
-* Integration with EntraID and dashboarding tool for SmartLab metrics
-* Updates to demo applications, including the "versioned demon" in Quay
-* Onboarding of new teams, including "Frames"
-* Fixes for critical vulnerabilities in argocd-image-updater
-
-These changes aim to improve our efficiency, security, and user experience. We will continue to refine and improve our processes based on your feedback.
-
-**Please review the full release notes for more details.**
-
-### **Bugs**
-Here is a concise and professional release notes summary:
-
-**Release Notes: Test-release-0.1.0**
-
-We are pleased to announce the release of Test-release-0.1.0, which addresses several key issues and enhances functionality across our platform.
-
-**Key Fixes and Enhancements**
-
-* Resolved an error with RHACS scanning images in ghcr.io and aws repositories.
-* Fixed Provisioning not running due to a related issue.
-* Ensured compatibility with UOCP environments for GitLab runners.
-* Addressed service account issues in Argo Workflows.
-* Improved CVE handling in RHACS, allowing for namespace-level deferral or false-positive marking.
-* Resolved an error with the whalesay demo app.
-* Corrected entry point recognition for tagged images in Quay.
-
-These fixes and enhancements improve overall platform stability and functionality.
+Product Team tasks include automating incident assignments, updating HOPEX source code repository, documenting application logs references, removing unused namespaces, ensuring CMDB fields are correctly filled, updating firewall rules, changing access control for PostgreSQL DB server, connecting SonarQube to EntraID, deploying applications in DEV: ART, updating CMDB fields for Apigee and Kafka, moving demo applications to SOCP Sandbox Openshift, on-boarding the "Frames" team, pushing code to Gitlab, deploying in production, integrating dashboarding tool for SmartLab metrics, updating checklist for application transitions, fixing vulnerabilities in argocd-image-updater, providing procedures for out-of-hours RIS outages, planning Openshift post-mortems, enabling Risk-related notifications, and provisioning access management for RHACS and Quay. Additionally, updating Quay provisioning scripts and argocd-image-updater are planned.
 
 ## **Detailed Issues List**
 
 | Priority  | Key   | Summary | Status  |
 |-----------|------|---------|---------|
+| Major | CICD-385 | RHACS error message cannot scan images in ghcr.io and aws | To Do |
+| Major | CICD-372 | Fix issue with the Provisioning not running | Done |
+| Major | CICD-361 | Fix the issue with the GitLab runners not working on UOCP | Done |
+| Major | CICD-357 | Fix service account issue in Argo Workflows | Done |
+| Major | CICD-351 | RHACS : for a CVE be able to defer or mark as false-positive for one namespace without affecting all namespaces it appears in | On-Hold |
+| Major | CICD-346 | Fix the whalesay demo app that is in error | Backlog |
+| Major | CICD-335 | Issue where the entry point to tagged images in Quay is not recognised  | Backlog |
 | Major | CICD-384 | S&T Business Data Scientists Gitlab project | To Do |
 | Major | CICD-383 | Update Confluence article on how to defer vulnerability with RHACS 4.5 | Done |
 | Major | CICD-381 | As a member of the Application Deployment team I wish to be able to check out all the projects for an application into one folder so I can merge in a new release, test the build locally and then quickly check in the updates | Done |
@@ -107,16 +68,7 @@ These fixes and enhancements improve overall platform stability and functionalit
 | Major | CICD-330 | Provision access management for Quay | Backlog |
 | Major | CICD-325 |  Update argocd-image-updater to V0.12.0 | Done |
 | Major | CICD-323 | Refactor Quay provisioning script | Backlog |
-| Major | CICD-385 | RHACS error message cannot scan images in ghcr.io and aws | To Do |
-| Major | CICD-372 | Fix issue with the Provisioning not running | Done |
-| Major | CICD-361 | Fix the issue with the GitLab runners not working on UOCP | Done |
-| Major | CICD-357 | Fix service account issue in Argo Workflows | Done |
-| Major | CICD-351 | RHACS : for a CVE be able to defer or mark as false-positive for one namespace without affecting all namespaces it appears in | On-Hold |
-| Major | CICD-346 | Fix the whalesay demo app that is in error | Backlog |
-| Major | CICD-335 | Issue where the entry point to tagged images in Quay is not recognised  | Backlog |
 
-A big shoutout to these amazing individuals who helped make this release a success! 🎉 
-Looking forward to hearing your feedback.
-
+A big shoutout to these amazing individuals who helped make this release a success! 🎉
 Thanks,
 **Go CI/CD**
