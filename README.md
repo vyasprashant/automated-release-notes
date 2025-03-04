@@ -127,17 +127,3 @@ Update summarizers/ollama_summarizer.py to use http://ollama:11434/api/generate 
 Feel free to submit issues or pull requests to enhance functionality or fix bugs!
 
 ---
-
-### Instructions
-1. **Create the File**:
-   - Copy the content above into a text editor.
-   - Save it as `README.md` in your project root directory (`arnr2/`).
-
-2. **Customize**:
-   - Replace `<repository-url>` with your actual Git repository URL if you’re using one.
-   - Adjust default values (e.g., Jira URL, username) to match your specific setup if preferred.
-
-3. **Include in Docker**:
-   - The `COPY . .` line in your `Dockerfile` will automatically include `README.md` in the image, though it’s not required for runtime—it’s just documentation.
-
-This Markdown file provides a comprehensive guide for your project, ensuring users can easily set up and use both the UI and CLI modes. Let me know if you’d like any additions or modifications!
