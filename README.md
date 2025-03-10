@@ -15,7 +15,7 @@ This project is a Dockerized tool for generating release notes from Jira issues,
 
 ## Project Structure
 ```
-arnr2/
+automated-release-notes/
 ├── Dockerfile
 ├── README.md
 ├── cli.py             # Core logic and CLI interface
@@ -45,7 +45,7 @@ arnr2/
 ### 1. Clone the Repository
 ```
 git clone <repository-url>
-cd arnr2 
+cd automated-release-notes 
 ```
 ### 2. Build the Docker Image
 ```
