@@ -37,7 +37,6 @@ def extract_adf_text(adf_content):
     return parse_node(adf_content).strip()
 
 def generate_release_notes(cfg):
-    """Generate release notes from Jira issues using the provided config dictionary."""
     if "jira" not in cfg or not all(k in cfg["jira"] for k in ["url", "username", "password"]):
         raise Exception("Missing required 'jira' config fields: url, username, password")
     jira_url = cfg["jira"]["url"]
